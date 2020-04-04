@@ -21,6 +21,9 @@ ass="btn btn-primary btn-lg" href="/campgrounds/new">Add New Campground</a>
 					<div class="caption">
 						<h4><%= campground.name %></h4>
 					</div>
+					<p>
+						<a href="/campgrounds/<%= campground._id%>" class="btn btn-primary">More Info
+					</p>
 				</div>
 			</div>
 		<% }); %>	

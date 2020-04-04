@@ -1,23 +1,45 @@
 var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
 
+mongoose.connect("mongodb://localhost/yelp_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-var campgrounds = [
-		{name: "Salmon Creek", image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80"},
-		{name: "Granite Hill", image: "https://images.fineartamerica.com/images-medium-large-5/sunset-over-bunes-beach-from-inside-tent-cody-duncan.jpg"},
-		{name: "Mountain Goat", image:"https://www.travelyosemite.com/media/610215/housekeeping-camp_camp-view_1000x667.jpg"}
-	]
+// schema setup
+var campgroundSchema = new mongoose.Schema({
+	name: String,
+	image: String,
+});
+
+var Campground = mongoose.model("Campground", campgroundSchema);
+
+// Campground.create({
+// 	name: "Mountain Goat", image:"https://www.travelyosemite.com/media/610215/housekeeping-camp_camp-view_1000x667.jpg"
+// }, function(err, campground) {
+// 	if(err){
+// 		console.log(err);
+// 	} else {
+// 		console.log("NEWLY CREATED CAMPGROUND: ");
+// 		console.log(campground);
+// 	}
+// });
 
 app.get("/", function(req, res){
 	res.render("landing");
 });
 
 app.get("/campgrounds", function(req, res){
-	
-	res.render("campgrounds", {campgrounds: campgrounds});
+	// get all campgrounds from DB
+	Campground.find({}, function(err, allCampgrounds) {
+		if(err) {
+			console.log(err);
+		} else {
+			res.render("campgrounds", {campgrounds:allCampgrounds});
+		}	
+	});
+	// res.render("campgrounds", {campgrounds: campgrounds});
 });
 
 app.post("/campgrounds", function(req, res){
@@ -26,9 +48,15 @@ app.post("/campgrounds", function(req, res){
 	var name = req.body.name;
 	var image = req.body.image;
 	var newCampground = {name: name, image: image}
-	campgrounds.push(newCampground); 
-	// redirect back to campgrounds page
-	res.redirect("/campgrounds");
+	// create a new campground and save to DB
+	Campground.create(newCampground, function(err, newlyCreated){
+		if(err){
+			console.log(err);
+		} else {
+			// redirect back to campgrounds page
+			res.redirect("/campgrounds");		}
+	});
+	
 });
 
 app.get("/campgrounds/new", function(req, res){
